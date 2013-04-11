@@ -9,11 +9,13 @@
 #  updated_at      :datetime        not null
 #  password_digest :string(255)
 #  remember_token  :string(255)
+#  admin           :boolean         default(FALSE)
 #
 
 class User < ActiveRecord::Base
   attr_accessible :email, :name, :password, :password_confirmation
   has_secure_password
+  has_many :microposts, dependent: :destroy
 
   # To make sure that the email address is unique,
   # must change it to lowercase before storing to database
@@ -27,6 +29,10 @@ class User < ActiveRecord::Base
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX }, uniqueness: { case_sensitive: false }
   validates :password, length: { minimum: 6 }
   validates :password_confirmation, presence: true
+
+  def feed
+    Micropost.where("user_id = ?", id)
+  end
 
   private
     def create_remember_token
